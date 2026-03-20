@@ -19,17 +19,18 @@ jobs:
       - name: Login to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      - name: Set image tag
+        run: echo "TAG=${GITHUB_SHA}" >> $GITHUB_ENV
+
       - name: Build Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/upload-server:latest .
+          docker build -t ghcr.io/${{ github.repository_owner }}/tiklo-upload:${{ env.TAG }} .
+          docker tag ghcr.io/${{ github.repository_owner }}/tiklo-upload:${{ env.TAG }} ghcr.io/${{ github.repository_owner }}/tiklo-upload:latest
 
       - name: Push Docker Image
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/upload-server:latest
-
-      # 🔥 OPTIONAL: Delete old dangling images in CI
-      - name: Cleanup local images
-        run: docker image prune -f
+          docker push ghcr.io/${{ github.repository_owner }}/tiklo-upload:${{ env.TAG }}
+          docker push ghcr.io/${{ github.repository_owner }}/tiklo-upload:latest
 
   deploy:
     needs: build-and-push
@@ -44,28 +45,24 @@ jobs:
           sshpass -p "${{ secrets.VPS_PASS }}" ssh \
             -p ${{ secrets.VPS_PORT }} \
             -o StrictHostKeyChecking=no \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-
-            echo "🧹 Cleaning old Docker images..."
-            docker image prune -af || true
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << EOF
 
             echo "🚀 Pulling latest image..."
-            docker pull ghcr.io/${{ github.repository_owner }}/upload-server:latest
+            docker pull ghcr.io/${{ github.repository_owner }}/tiklo-upload:latest
 
             echo "🛑 Stopping old container..."
-            docker stop upload-server || true
-            docker rm upload-server || true
+            docker rm -f tiklo-upload || true
 
             echo "▶️ Starting new container..."
             docker run -d \
               -p 4100:3000 \
               -v /root/upload-server-data:/app/uploads \
-              --name upload-server \
+              --name tiklo-upload \
               --restart unless-stopped \
-              ghcr.io/${{ github.repository_owner }}/upload-server:latest
+              ghcr.io/${{ github.repository_owner }}/tiklo-upload:latest
 
-            echo "🧹 Removing unused images..."
-            docker system prune -f || true
+            echo "🧹 Cleaning unused images..."
+            docker image prune -af || true
 
             echo "✅ Deployment complete!"
           EOF
