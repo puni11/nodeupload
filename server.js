@@ -32,7 +32,7 @@ app.use("/uploads", express.static(uploadDir));
 app.get("/", (req, res) => {
   res.send(`
     <h1>🚀 Upload Server Running</h1>
-    <p>Use /inspector APIs</p>
+    <p>Use /inspectosr APIs</p>
   `);
 });
 
