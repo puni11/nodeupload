@@ -15,24 +15,27 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // ✅ Middleware
-app.use(express.json()); // 🔥 IMPORTANT
+app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ CORS
+// ✅ CORS - Updated to allow ALL origins
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "*",               // 🔥 Allows any website/frontend to access this API
   methods: ["GET", "POST", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
+  allowedHeaders: ["Content-Type", "Authorization"], // Added Authorization just in case
 }));
 
-// ✅ Serve uploads
-app.use("/uploads", express.static(uploadDir));
+// ✅ Serve uploads with Caching (Helps VPS Performance)
+app.use("/uploads", express.static(uploadDir, {
+  maxAge: '1d', // Tells browsers to cache images for 1 day
+  etag: true
+}));
 
 // ✅ Health check
 app.get("/", (req, res) => {
   res.send(`
     <h1>🚀 Upload Server Running</h1>
-    <p>Use /inspectosr APIs</p>
+    <p>API is active on /inspector</p>
   `);
 });
 
@@ -40,6 +43,7 @@ app.get("/", (req, res) => {
 app.use("/inspector", inspector);
 
 // 🚀 Start server
+// We use 0.0.0.0 to ensure it listens on all network interfaces inside Docker
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
