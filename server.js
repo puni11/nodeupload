@@ -6,7 +6,7 @@ import fs from "fs";
 import inspector from "./routes/inspector.routes.js";
 
 const app = express();
-const PORT = 3001;
+const PORT = 3000;
 
 // ✅ Ensure uploads folder exists
 const uploadDir = path.join(process.cwd(), "uploads");
