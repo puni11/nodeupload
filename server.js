@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs";
 
 import inspector from "./routes/inspector.routes.js";
-
+import blog from "./routes/blog.routes.js";
 const app = express();
 const PORT = 3000;
 
@@ -41,6 +41,7 @@ app.get("/", (req, res) => {
 
 // ✅ Routes
 app.use("/inspector", inspector);
+app.use("/blog", blog);
 
 // 🚀 Start server
 // We use 0.0.0.0 to ensure it listens on all network interfaces inside Docker
