@@ -10,13 +10,12 @@ router.get("/", (req, res) => {
 });
 
 // ✅ Upload
-router.post("/upload/:userId", async (req, res) => {
+router.post("/upload", async (req, res) => {
   try {
-    const { userId } = req.params;
     console.log("yes");
 
     // call your controller (adapted for express)
-    await uploadImage(`blog/${userId}`)(req, res);
+    await uploadImage(`blog`)(req, res);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Upload failed" });
