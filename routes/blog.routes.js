@@ -27,7 +27,7 @@ router.delete("/delete/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    await deleteImage(`blog/${userId}`)(req, res);
+    await deleteImage(`blog`)(req, res);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Delete failed" });
